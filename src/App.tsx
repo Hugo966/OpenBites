@@ -2,9 +2,12 @@ import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { supabase } from './db'
 import AlimentosPage from './pages/Alimentos'
+import { Icono } from './ui'
 
-const SECCIONES = { alimentos: 'Alimentos' } as const
-type Seccion = keyof typeof SECCIONES
+const SECCIONES = [
+  { id: 'alimentos', nombre: 'Alimentos', icono: 'alimentos', Page: AlimentosPage },
+] as const
+type Seccion = (typeof SECCIONES)[number]['id']
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
@@ -19,19 +22,25 @@ export default function App() {
   if (session === undefined) return null
   if (!session) return <Login />
 
+  const actual = SECCIONES.find(s => s.id === seccion)!
   return (
-    <>
-      <header>
-        <strong>OpenBites</strong>
-        <nav>
-          {(Object.keys(SECCIONES) as Seccion[]).map(s => (
-            <button key={s} aria-current={s === seccion} onClick={() => setSeccion(s)}>{SECCIONES[s]}</button>
-          ))}
-        </nav>
-        <button className="secundario" onClick={() => supabase.auth.signOut()}>Salir</button>
-      </header>
-      <main>{seccion === 'alimentos' && <AlimentosPage />}</main>
-    </>
+    <div className="app">
+      <nav className="nav" aria-label="Secciones">
+        <div className="marca"><img src="/favicon.svg" alt="" width="28" height="28" /> OpenBites</div>
+        {SECCIONES.map(s => (
+          <button key={s.id} aria-current={s.id === seccion ? 'page' : undefined} onClick={() => setSeccion(s.id)}>
+            <Icono n={s.icono} /> <span>{s.nombre}</span>
+          </button>
+        ))}
+        <button className="salir" onClick={() => supabase.auth.signOut()}>
+          <Icono n="salir" /> <span>Salir</span>
+        </button>
+      </nav>
+      <main>
+        <h1>{actual.nombre}</h1>
+        <actual.Page />
+      </main>
+    </div>
   )
 }
 
@@ -45,10 +54,12 @@ function Login() {
   }
   return (
     <main className="login">
+      <img src="/favicon.svg" alt="" width="56" height="56" />
       <h1>OpenBites</h1>
-      <form onSubmit={enviar}>
+      <p className="tenue">Tu menú, tus macros.</p>
+      <form onSubmit={enviar} className="tarjeta">
         <label>Email <input name="email" type="email" required autoComplete="email" /></label>
-        <button>Enviar enlace</button>
+        <button className="primario">Enviar enlace</button>
       </form>
       <p role="status">{estado}</p>
     </main>
