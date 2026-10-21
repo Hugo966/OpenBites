@@ -104,6 +104,7 @@ export function ajustar(alimentos: Alimentos, items: Item[], pet: Peticion): Opc
   }
 
   // Dentro de tolerancia primero; entre esas, menos cambios; luego error y menos gramos movidos
+  // ponytail: aún no prefiere cantidades que cuadren con envases (spec 5, bonus); añadir como desempate si se echa en falta
   const movido = (o: Opcion) => o.cambios.reduce((s, c) => s + Math.abs(gramos(alimentos[c.alimentoId], c.a - c.de)), 0)
   opciones.sort((x, y) =>
     Number(y.dentro) - Number(x.dentro) ||

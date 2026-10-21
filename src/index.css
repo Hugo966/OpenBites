@@ -249,3 +249,16 @@ select { font: inherit; font-size: .85rem; padding: 6px 28px 6px 10px; border-ra
 .resultado .fijado { font-weight: 800; }
 .resultado .p.fijado { color: var(--p); } .resultado .hc.fijado { color: var(--hc); } .resultado .g.fijado { color: var(--g); } .resultado .kcal.fijado { color: var(--fg); }
 .resultado .primario { margin-left: auto; padding: 8px 16px; }
+
+/* Envases y compra */
+.avisos { background: var(--hc-soft); border-radius: 14px; padding: 10px 14px; margin: 0 16px 14px 0; font-size: .85rem; }
+.avisos summary { cursor: pointer; font-weight: 700; color: var(--fg); }
+.avisos ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.item-nombre.aviso::after { content: ' ⚠'; color: var(--hc); }
+.compra { max-width: 520px; }
+.lista-compra { list-style: none; margin: 0; padding: 0; }
+.lista-compra li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+.lista-compra .check { color: var(--fg); font-weight: 600; min-width: 0; }
+.lista-compra .cuanto { text-align: right; font-size: .9rem; }
+.lista-compra .cuanto small { display: block; color: var(--muted); }
+.lista-compra li.hecho .item-nombre, .lista-compra li.hecho .cuanto { text-decoration: line-through; opacity: .5; }

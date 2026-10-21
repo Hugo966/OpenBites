@@ -3,7 +3,9 @@ import { dentroMargen, diaLibre, MACROS, MARGEN_DIA, macrosItem, restar, totalCo
 import type { Alimento, Alimentos, Comida, Macros, Menu, TipoDia } from '../core/types'
 import { useObjetos } from '../db'
 import { ChipsMacros, Icono, r0 } from '../ui'
+import { analizarEnvases } from '../core/envases'
 import { Ajustador } from './Ajustador'
+import { AvisosEnvase, DialogoCompra } from './Compra'
 import { DialogoAlimento, dominante } from './Alimentos'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -37,6 +39,7 @@ export default function MenuPage() {
   const [destino, setDestino] = useState<{ d: number; f: number } | null>(null)
   const [nuevoAl, setNuevoAl] = useState<Partial<Alimento> | null>(null)
   const [ajustando, setAjustando] = useState<{ d: number; f: number } | null>(null)
+  const [compra, setCompra] = useState(false)
 
   const guardarYa = async (m: Menu) => {
     pendiente.current = null
@@ -75,6 +78,8 @@ export default function MenuPage() {
   )
 
   const tiposPorId = Object.fromEntries(tipos.lista.map(t => [t.id, t]))
+  const envases = analizarEnvases(alimentos, menu)
+  const desperdicio = new Set(envases.filter(e => e.sobran > 1).map(e => e.alimentoId))
   const diasNormales = menu.dias.filter(d => !diaLibre(d))
   const media = diasNormales.length ? diasNormales.reduce((s, d) => s + totalDia(alimentos, d).kcal, 0) / diasNormales.length : 0
 
@@ -89,6 +94,7 @@ export default function MenuPage() {
           </select>
         )}
         <div className="acciones-menu">
+          <button className="secundario" onClick={() => setCompra(true)}><Icono n="compra" size={18} /> Compra</button>
           <button className="secundario" onClick={() => crear(menuNuevo())}><Icono n="mas" size={18} /> Nuevo</button>
           <button className="secundario" onClick={() => crear({ ...structuredClone(menu), id: crypto.randomUUID(), nombre: `${menu.nombre} (copia)` })}><Icono n="copiar" size={18} /> Duplicar</button>
           <button className="icono" aria-label="Borrar menú" onClick={async () => {
@@ -99,6 +105,7 @@ export default function MenuPage() {
       </div>
       <p className="tenue resumen">{menu.dias.length} días · media <b>{miles(media)} kcal/día</b>{diasNormales.length < menu.dias.length && ' (sin contar días libres)'}</p>
       {menus.error && <p role="alert" className="error">{menus.error}</p>}
+      <AvisosEnvase envases={envases} alimentos={alimentos} dias={menu.dias.length} />
 
       <div className="cuadricula-scroll">
         <table className="cuadricula">
@@ -146,7 +153,7 @@ export default function MenuPage() {
                 </th>
                 {menu.dias.map((dia, d) => (
                   <td key={d}>
-                    <Celda titulo={fila} comida={dia.comidas[f]} alimentos={alimentos}
+                    <Celda titulo={fila} comida={dia.comidas[f]} alimentos={alimentos} desperdicio={desperdicio}
                       onAñadir={() => setDestino({ d, f })}
                       onAjustar={() => setAjustando({ d, f })}
                       onCambio={fn => cambiar(m => fn(m.dias[d].comidas[f]))} />
@@ -181,6 +188,7 @@ export default function MenuPage() {
       {/* Al crear un alimento el selector se cierra pero el destino se mantiene hasta guardarlo */}
       <SelectorAlimento abierto={!!destino && !nuevoAl} alimentos={al.lista} onElegir={añadir}
         onCrear={nombre => setNuevoAl({ nombre })} onCerrar={() => !nuevoAl && setDestino(null)} />
+      <DialogoCompra abierto={compra} menu={menu} alimentos={alimentos} onCerrar={() => setCompra(false)} />
       <DialogoAlimento alimento={nuevoAl} onCerrar={() => { setNuevoAl(null); setDestino(null) }}
         onGuardar={async a => { await al.guardar(a); añadir(a) }} />
     </>
@@ -211,10 +219,11 @@ function ResumenDia({ total, objetivo, libre }: { total: Macros; objetivo?: Macr
   )
 }
 
-function Celda({ titulo, comida, alimentos, onAñadir, onAjustar, onCambio }: {
+function Celda({ titulo, comida, alimentos, desperdicio, onAñadir, onAjustar, onCambio }: {
   titulo: string
   comida: Comida
   alimentos: Alimentos
+  desperdicio: Set<string>
   onAñadir: () => void
   onAjustar: () => void
   onCambio: (f: (c: Comida) => void) => void
@@ -230,7 +239,8 @@ function Celda({ titulo, comida, alimentos, onAñadir, onAjustar, onCambio }: {
           return (
             <div className="item" key={i}>
               <span className={`punto ${a ? dominante(a.por100) : ''}`} />
-              <span className="item-nombre" title={a?.nombre}>{a?.nombre ?? 'Alimento borrado'}</span>
+              <span className={`item-nombre ${desperdicio.has(it.alimentoId) ? 'aviso' : ''}`}
+                title={desperdicio.has(it.alimentoId) ? `${a?.nombre}: el envase no cuadra, mira los avisos` : a?.nombre}>{a?.nombre ?? 'Alimento borrado'}</span>
               <Cantidad valor={it.cantidad} paso={a?.gUnidad ? 1 : 5}
                 onCambio={v => onCambio(c => { c.items[i].cantidad = v })} />
               <span className="ud">{a?.gUnidad ? 'ud' : 'g'}</span>
