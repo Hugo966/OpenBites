@@ -17,7 +17,7 @@ src/
   pages/       # una página por sección
 supabase/schema.sql   # tablas + RLS por user_id
 ```
-Menú se guarda como un documento JSON (`menus.data jsonb`): días/comidas/ítems siempre se leen y editan juntos, no hace falta normalizar. Alimentos, platos y tipos de día en tablas propias.
+Una sola tabla `objetos (tipo, data jsonb)` con RLS: cada alimento, plato, tipo de día o menú es una fila con su JSON. Al añadir un plato a una comida se copian sus ítems (los ítems siempre son alimento + cantidad).
 
 ## Tareas
 1. **Scaffold**: Vite + React + TS, Vitest, `schema.sql`. Tú creas el proyecto Supabase y me pasas URL + anon key (`.env.local`).
