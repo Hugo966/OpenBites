@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { dentroMargen, diaLibre, MACROS, MARGEN_DIA, macrosItem, totalComida, totalDia } from '../core/macros'
+import { dentroMargen, diaLibre, MACROS, MARGEN_DIA, macrosItem, restar, totalComida, totalDia } from '../core/macros'
 import type { Alimento, Alimentos, Comida, Macros, Menu, TipoDia } from '../core/types'
 import { useObjetos } from '../db'
 import { ChipsMacros, Icono, r0 } from '../ui'
+import { Ajustador } from './Ajustador'
 import { DialogoAlimento, dominante } from './Alimentos'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -35,6 +36,7 @@ export default function MenuPage() {
 
   const [destino, setDestino] = useState<{ d: number; f: number } | null>(null)
   const [nuevoAl, setNuevoAl] = useState<Partial<Alimento> | null>(null)
+  const [ajustando, setAjustando] = useState<{ d: number; f: number } | null>(null)
 
   const guardarYa = async (m: Menu) => {
     pendiente.current = null
@@ -146,6 +148,7 @@ export default function MenuPage() {
                   <td key={d}>
                     <Celda titulo={fila} comida={dia.comidas[f]} alimentos={alimentos}
                       onAñadir={() => setDestino({ d, f })}
+                      onAjustar={() => setAjustando({ d, f })}
                       onCambio={fn => cambiar(m => fn(m.dias[d].comidas[f]))} />
                   </td>
                 ))}
@@ -164,6 +167,17 @@ export default function MenuPage() {
         </table>
       </div>
 
+      {(() => {
+        const dia = ajustando && menu.dias[ajustando.d]
+        const obj = dia && !diaLibre(dia) ? tiposPorId[dia.tipoDiaId ?? '']?.objetivo : undefined
+        return (
+          <Ajustador alimentos={alimentos} onCerrar={() => setAjustando(null)}
+            titulo={dia ? `${menu.comidas[ajustando.f].toLowerCase()} · ${dia.nombre}` : ''}
+            comida={dia ? dia.comidas[ajustando.f] : null}
+            falta={dia && obj ? restar(obj, totalDia(alimentos, dia)) : undefined}
+            onAplicar={items => cambiar(m => { m.dias[ajustando!.d].comidas[ajustando!.f].items = items })} />
+        )
+      })()}
       {/* Al crear un alimento el selector se cierra pero el destino se mantiene hasta guardarlo */}
       <SelectorAlimento abierto={!!destino && !nuevoAl} alimentos={al.lista} onElegir={añadir}
         onCrear={nombre => setNuevoAl({ nombre })} onCerrar={() => !nuevoAl && setDestino(null)} />
@@ -197,11 +211,12 @@ function ResumenDia({ total, objetivo, libre }: { total: Macros; objetivo?: Macr
   )
 }
 
-function Celda({ titulo, comida, alimentos, onAñadir, onCambio }: {
+function Celda({ titulo, comida, alimentos, onAñadir, onAjustar, onCambio }: {
   titulo: string
   comida: Comida
   alimentos: Alimentos
   onAñadir: () => void
+  onAjustar: () => void
   onCambio: (f: (c: Comida) => void) => void
 }) {
   const total = totalComida(alimentos, comida)
@@ -227,6 +242,7 @@ function Celda({ titulo, comida, alimentos, onAñadir, onCambio }: {
         })}
       <div className="celda-pie">
         {!comida.libre && <button className="añadir" onClick={onAñadir}><Icono n="mas" size={16} /> Añadir</button>}
+        {!comida.libre && comida.items.length > 0 && <button className="añadir" onClick={onAjustar} aria-label={`Ajustar ${titulo}`} title="Ajustar macros"><Icono n="ajustar" size={16} /></button>}
         <button className={`etiqueta-libre ${comida.libre ? 'activa' : ''}`} aria-pressed={!!comida.libre}
           onClick={() => onCambio(c => { c.libre = !c.libre || undefined })}>Libre</button>
         {!comida.libre && comida.items.length > 0 && <span className="celda-total">{r0(total.kcal)} kcal</span>}

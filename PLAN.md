@@ -26,7 +26,7 @@ Una sola tabla `objetos (tipo, data jsonb)` con RLS: cada alimento, plato, tipo 
 4. ✅ **Tipos de día** (pantalla Objetivos). Platos: pendiente, se añadirán desde la propia celda.
 5. ✅ **Editor de menú = pantalla principal**: cuadrícula tipo hoja de cálculo (días en columnas, comidas en filas), totales por día vs objetivo en la cabecera, crear alimentos desde la celda. Alimentos es secundario.
 6. ✅ **core/ajustador** + tests: movimientos simples, pares (2×2), redondeo 5 g / unidad, límites, exclusiones, ranking, top 5, margen ±5 kcal / ±2 g.
-7. **UI ajustador**: panel en cada comida, elegir macros fijados, desmarcar alimentos, aplicar opción.
+7. ✅ **UI ajustador**: panel en cada comida, elegir macros fijados, desmarcar alimentos, aplicar opción.
 8. **core/envases** + UI avisos; preferencia de envase en el ranking del ajustador.
 9. **core/compra** + página lista de la compra.
 10. **Deploy** en Vercel + prueba manual en móvil.
