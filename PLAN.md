@@ -20,12 +20,12 @@ supabase/schema.sql   # tablas + RLS por user_id
 Una sola tabla `objetos (tipo, data jsonb)` con RLS: cada alimento, plato, tipo de día o menú es una fila con su JSON. Al añadir un plato a una comida se copian sus ítems (los ítems siempre son alimento + cantidad).
 
 ## Tareas
-1. **Scaffold**: Vite + React + TS, Vitest, `schema.sql`. Tú creas el proyecto Supabase y me pasas URL + anon key (`.env.local`).
-2. **core/macros** + tests: totales, unidades, platos expandidos, comidas libres excluidas, margen día ±20 kcal / ±5 g.
-3. **Login + Alimentos**: magic link, CRUD alimentos (por 100 g, g/unidad, envase, nunca_sugerir, mín/máx). Verificar sync PC ↔ móvil.
-4. **Platos y Tipos de día**: CRUD.
-5. **Editor de menú**: menús/días/comidas, duplicar día/comida, añadir alimento/plato, totales en vivo vs objetivo.
-6. **core/ajustador** + tests: movimientos simples, pares (2×2), redondeo 5 g / unidad, límites, exclusiones, ranking, top 5, margen ±5 kcal / ±2 g.
+1. ✅ **Scaffold**: Vite + React + TS, Vitest, `schema.sql`. Tú creas el proyecto Supabase y me pasas URL + anon key (`.env.local`).
+2. ✅ **core/macros** + tests: totales, unidades, platos expandidos, comidas libres excluidas, margen día ±20 kcal / ±5 g.
+3. ✅ **Login + Alimentos**: magic link, CRUD alimentos (por 100 g, g/unidad, envase, nunca_sugerir, mín/máx). Verificar sync PC ↔ móvil.
+4. ✅ **Tipos de día** (pantalla Objetivos). Platos: pendiente, se añadirán desde la propia celda.
+5. ✅ **Editor de menú = pantalla principal**: cuadrícula tipo hoja de cálculo (días en columnas, comidas en filas), totales por día vs objetivo en la cabecera, crear alimentos desde la celda. Alimentos es secundario.
+6. ✅ **core/ajustador** + tests: movimientos simples, pares (2×2), redondeo 5 g / unidad, límites, exclusiones, ranking, top 5, margen ±5 kcal / ±2 g.
 7. **UI ajustador**: panel en cada comida, elegir macros fijados, desmarcar alimentos, aplicar opción.
 8. **core/envases** + UI avisos; preferencia de envase en el ranking del ajustador.
 9. **core/compra** + página lista de la compra.

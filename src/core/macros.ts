@@ -20,8 +20,7 @@ export function macrosDe(a: Alimento, cantidad: number): Macros {
 
 export function macrosItem(alimentos: Alimentos, item: Item): Macros {
   const a = alimentos[item.alimentoId]
-  if (!a) throw new Error(`Alimento desconocido: ${item.alimentoId}`)
-  return macrosDe(a, item.cantidad)
+  return a ? macrosDe(a, item.cantidad) : CERO // alimento borrado: no suma
 }
 
 export const totalItems = (alimentos: Alimentos, items: Item[]) =>

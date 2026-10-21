@@ -10,22 +10,22 @@ const alimentos: Alimentos = {
 const lunes: Dia = {
   nombre: 'Lunes',
   comidas: [
-    { nombre: 'Desayuno', items: [{ alimentoId: 'huevo', cantidad: 2 }] }, // 120 g
-    { nombre: 'Comida', items: [{ alimentoId: 'arroz', cantidad: 100 }] },
+    { items: [{ alimentoId: 'huevo', cantidad: 2 }] }, // 120 g
+    { items: [{ alimentoId: 'arroz', cantidad: 100 }] },
   ],
 }
 const viernes: Dia = {
   nombre: 'Viernes',
   comidas: [
-    { nombre: 'Comida', items: [{ alimentoId: 'arroz', cantidad: 50 }] },
-    { nombre: 'Cena', libre: true, items: [{ alimentoId: 'arroz', cantidad: 500 }] },
+    { items: [{ alimentoId: 'arroz', cantidad: 50 }] },
+    { libre: true, items: [{ alimentoId: 'arroz', cantidad: 500 }] },
   ],
 }
 
 test('totales con unidades y comidas libres', () => {
   expect(totalDia(alimentos, lunes)).toEqual({ kcal: 530, p: 22, hc: 79.2, g: 13 })
   expect(totalDia(alimentos, viernes).kcal).toBe(175)
-  expect(totalMenu(alimentos, { id: 'm', nombre: 'm', dias: [lunes, viernes] }).kcal).toBe(705)
+  expect(totalMenu(alimentos, { id: 'm', nombre: 'm', comidas: ['A', 'B'], dias: [lunes, viernes] }).kcal).toBe(705)
   expect(diaLibre(viernes)).toBe(true)
   expect(diaLibre(lunes)).toBe(false)
 })
@@ -37,6 +37,6 @@ test('margen diario ±20 kcal / ±5 g', () => {
   expect(dentroMargen({ kcal: 2000, p: 150, hc: 200, g: 54 }, obj, MARGEN_DIA)).toBe(false)
 })
 
-test('alimento desconocido lanza error', () => {
-  expect(() => totalDia(alimentos, { nombre: 'x', comidas: [{ nombre: 'c', items: [{ alimentoId: 'nope', cantidad: 1 }] }] })).toThrow()
+test('alimento borrado cuenta como 0', () => {
+  expect(totalDia(alimentos, { nombre: 'x', comidas: [{ items: [{ alimentoId: 'nope', cantidad: 1 }] }] })).toEqual({ kcal: 0, p: 0, hc: 0, g: 0 })
 })

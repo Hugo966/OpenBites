@@ -2,16 +2,20 @@ import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { supabase } from './db'
 import AlimentosPage from './pages/Alimentos'
+import MenuPage from './pages/Menu'
+import ObjetivosPage from './pages/Objetivos'
 import { Icono } from './ui'
 
 const SECCIONES = [
+  { id: 'menu', nombre: 'Menú', icono: 'menu', Page: MenuPage },
   { id: 'alimentos', nombre: 'Alimentos', icono: 'alimentos', Page: AlimentosPage },
+  { id: 'objetivos', nombre: 'Objetivos', icono: 'objetivos', Page: ObjetivosPage },
 ] as const
 type Seccion = (typeof SECCIONES)[number]['id']
 
 export default function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
-  const [seccion, setSeccion] = useState<Seccion>('alimentos')
+  const [seccion, setSeccion] = useState<Seccion>('menu')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -36,8 +40,7 @@ export default function App() {
           <Icono n="salir" /> <span>Salir</span>
         </button>
       </nav>
-      <main>
-        <h1>{actual.nombre}</h1>
+      <main className={actual.id}>
         <actual.Page />
       </main>
     </div>

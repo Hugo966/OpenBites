@@ -10,11 +10,13 @@ type Tipo = 'alimento' | 'plato' | 'tipoDia' | 'menu'
 export function useObjetos<T extends { id: string }>(tipo: Tipo) {
   const [lista, setLista] = useState<T[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [cargado, setCargado] = useState(false)
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase.from('objetos').select('data').eq('tipo', tipo).order('updated_at')
     if (error) setError(error.message)
     else setLista(data.map(r => r.data as T))
+    setCargado(true)
   }, [tipo])
 
   useEffect(() => {
@@ -36,5 +38,5 @@ export function useObjetos<T extends { id: string }>(tipo: Tipo) {
     setLista(l => l.filter(o => o.id !== id))
   }
 
-  return { lista, guardar, borrar, error }
+  return { lista, guardar, borrar, error, cargado }
 }

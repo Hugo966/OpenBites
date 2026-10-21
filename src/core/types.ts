@@ -19,8 +19,10 @@ export type Plato = { id: string; nombre: string; items: Item[] }
 
 export type TipoDia = { id: string; nombre: string; objetivo: Macros }
 
-export type Comida = { nombre: string; libre?: boolean; items: Item[] }
+// Cuadrícula: menu.comidas son las filas (Desayuno, Comida…); cada día tiene una celda por fila, mismo índice.
+// Una celda vacía = ese día no tiene esa comida.
+export type Comida = { libre?: boolean; items: Item[] }
 export type Dia = { nombre: string; tipoDiaId?: string; comidas: Comida[] }
-export type Menu = { id: string; nombre: string; dias: Dia[] }
+export type Menu = { id: string; nombre: string; comidas: string[]; dias: Dia[] }
 
 export type Alimentos = Record<string, Alimento>
