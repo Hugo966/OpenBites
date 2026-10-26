@@ -1,41 +1,41 @@
-import type { Alimentos, Alimento, Comida, Dia, Item, Macros, Menu } from './types'
+import type { Day, Food, FoodMap, Item, Macros, Meal, Menu } from './types'
 
-export const CERO: Macros = { kcal: 0, p: 0, hc: 0, g: 0 }
-export const MACROS = ['kcal', 'p', 'hc', 'g'] as const
-export const MARGEN_COMIDA: Macros = { kcal: 5, p: 2, hc: 2, g: 2 }
-export const MARGEN_DIA: Macros = { kcal: 20, p: 5, hc: 5, g: 5 }
+export const ZERO: Macros = { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+export const MACROS = ['kcal', 'protein', 'carbs', 'fat'] as const
+export const MEAL_TOLERANCE: Macros = { kcal: 5, protein: 2, carbs: 2, fat: 2 }
+export const DAY_TOLERANCE: Macros = { kcal: 20, protein: 5, carbs: 5, fat: 5 }
 
-const combinar = (a: Macros, b: Macros, f: (x: number, y: number) => number): Macros =>
-  ({ kcal: f(a.kcal, b.kcal), p: f(a.p, b.p), hc: f(a.hc, b.hc), g: f(a.g, b.g) })
+const combine = (a: Macros, b: Macros, f: (x: number, y: number) => number): Macros =>
+  ({ kcal: f(a.kcal, b.kcal), protein: f(a.protein, b.protein), carbs: f(a.carbs, b.carbs), fat: f(a.fat, b.fat) })
 
-export const sumar = (a: Macros, b: Macros) => combinar(a, b, (x, y) => x + y)
-export const restar = (a: Macros, b: Macros) => combinar(a, b, (x, y) => x - y)
+export const add = (a: Macros, b: Macros) => combine(a, b, (x, y) => x + y)
+export const subtract = (a: Macros, b: Macros) => combine(a, b, (x, y) => x - y)
 
-export const gramos = (a: Alimento, cantidad: number) => (a.gUnidad ? cantidad * a.gUnidad : cantidad)
+export const grams = (f: Food, amount: number) => (f.gramsPerUnit ? amount * f.gramsPerUnit : amount)
 
-export function macrosDe(a: Alimento, cantidad: number): Macros {
-  const f = gramos(a, cantidad) / 100
-  return { kcal: a.por100.kcal * f, p: a.por100.p * f, hc: a.por100.hc * f, g: a.por100.g * f }
+export function macrosOf(f: Food, amount: number): Macros {
+  const k = grams(f, amount) / 100
+  return { kcal: f.per100.kcal * k, protein: f.per100.protein * k, carbs: f.per100.carbs * k, fat: f.per100.fat * k }
 }
 
-export function macrosItem(alimentos: Alimentos, item: Item): Macros {
-  const a = alimentos[item.alimentoId]
-  return a ? macrosDe(a, item.cantidad) : CERO // alimento borrado: no suma
+export function itemMacros(foods: FoodMap, item: Item): Macros {
+  const f = foods[item.foodId]
+  return f ? macrosOf(f, item.amount) : ZERO // deleted food: counts as nothing
 }
 
-export const totalItems = (alimentos: Alimentos, items: Item[]) =>
-  items.reduce((t, i) => sumar(t, macrosItem(alimentos, i)), CERO)
+export const itemsTotal = (foods: FoodMap, items: Item[]) =>
+  items.reduce((t, i) => add(t, itemMacros(foods, i)), ZERO)
 
-export const totalComida = (alimentos: Alimentos, c: Comida) => (c.libre ? CERO : totalItems(alimentos, c.items))
+export const mealTotal = (foods: FoodMap, m: Meal) => (m.free ? ZERO : itemsTotal(foods, m.items))
 
-export const totalDia = (alimentos: Alimentos, d: Dia) =>
-  d.comidas.reduce((t, c) => sumar(t, totalComida(alimentos, c)), CERO)
+export const dayTotal = (foods: FoodMap, d: Day) =>
+  d.meals.reduce((t, m) => add(t, mealTotal(foods, m)), ZERO)
 
-export const totalMenu = (alimentos: Alimentos, m: Menu) =>
-  m.dias.reduce((t, d) => sumar(t, totalDia(alimentos, d)), CERO)
+export const menuTotal = (foods: FoodMap, m: Menu) =>
+  m.days.reduce((t, d) => add(t, dayTotal(foods, d)), ZERO)
 
-// Un día con comidas libres no se compara con su objetivo
-export const diaLibre = (d: Dia) => d.comidas.some(c => c.libre)
+// A day with a free meal is not compared against its goal
+export const isFreeDay = (d: Day) => d.meals.some(m => m.free)
 
-export const dentroMargen = (real: Macros, objetivo: Macros, margen: Macros) =>
-  MACROS.every(k => Math.abs(real[k] - objetivo[k]) <= margen[k])
+export const withinTolerance = (actual: Macros, goal: Macros, tolerance: Macros) =>
+  MACROS.every(k => Math.abs(actual[k] - goal[k]) <= tolerance[k])

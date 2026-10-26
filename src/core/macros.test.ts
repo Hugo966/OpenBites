@@ -1,42 +1,42 @@
 import { expect, test } from 'vitest'
-import { dentroMargen, diaLibre, MARGEN_DIA, totalDia, totalMenu } from './macros'
-import type { Alimentos, Dia } from './types'
+import { DAY_TOLERANCE, dayTotal, isFreeDay, menuTotal, withinTolerance } from './macros'
+import type { Day, FoodMap } from './types'
 
-const alimentos: Alimentos = {
-  arroz: { id: 'arroz', nombre: 'Arroz', por100: { kcal: 350, p: 7, hc: 78, g: 1 } },
-  huevo: { id: 'huevo', nombre: 'Huevo', gUnidad: 60, por100: { kcal: 150, p: 12.5, hc: 1, g: 10 } },
+const foods: FoodMap = {
+  rice: { id: 'rice', name: 'Rice', per100: { kcal: 350, protein: 7, carbs: 78, fat: 1 } },
+  egg: { id: 'egg', name: 'Egg', gramsPerUnit: 60, per100: { kcal: 150, protein: 12.5, carbs: 1, fat: 10 } },
 }
 
-const lunes: Dia = {
-  nombre: 'Lunes',
-  comidas: [
-    { items: [{ alimentoId: 'huevo', cantidad: 2 }] }, // 120 g
-    { items: [{ alimentoId: 'arroz', cantidad: 100 }] },
+const monday: Day = {
+  name: 'Monday',
+  meals: [
+    { items: [{ foodId: 'egg', amount: 2 }] }, // 120 g
+    { items: [{ foodId: 'rice', amount: 100 }] },
   ],
 }
-const viernes: Dia = {
-  nombre: 'Viernes',
-  comidas: [
-    { items: [{ alimentoId: 'arroz', cantidad: 50 }] },
-    { libre: true, items: [{ alimentoId: 'arroz', cantidad: 500 }] },
+const friday: Day = {
+  name: 'Friday',
+  meals: [
+    { items: [{ foodId: 'rice', amount: 50 }] },
+    { free: true, items: [{ foodId: 'rice', amount: 500 }] },
   ],
 }
 
-test('totales con unidades y comidas libres', () => {
-  expect(totalDia(alimentos, lunes)).toEqual({ kcal: 530, p: 22, hc: 79.2, g: 13 })
-  expect(totalDia(alimentos, viernes).kcal).toBe(175)
-  expect(totalMenu(alimentos, { id: 'm', nombre: 'm', comidas: ['A', 'B'], dias: [lunes, viernes] }).kcal).toBe(705)
-  expect(diaLibre(viernes)).toBe(true)
-  expect(diaLibre(lunes)).toBe(false)
+test('totals with units and free meals', () => {
+  expect(dayTotal(foods, monday)).toEqual({ kcal: 530, protein: 22, carbs: 79.2, fat: 13 })
+  expect(dayTotal(foods, friday).kcal).toBe(175)
+  expect(menuTotal(foods, { id: 'm', name: 'm', mealNames: ['A', 'B'], days: [monday, friday] }).kcal).toBe(705)
+  expect(isFreeDay(friday)).toBe(true)
+  expect(isFreeDay(monday)).toBe(false)
 })
 
-test('margen diario ±20 kcal / ±5 g', () => {
-  const obj = { kcal: 2000, p: 150, hc: 200, g: 60 }
-  expect(dentroMargen({ kcal: 2020, p: 145, hc: 205, g: 60 }, obj, MARGEN_DIA)).toBe(true)
-  expect(dentroMargen({ kcal: 2021, p: 150, hc: 200, g: 60 }, obj, MARGEN_DIA)).toBe(false)
-  expect(dentroMargen({ kcal: 2000, p: 150, hc: 200, g: 54 }, obj, MARGEN_DIA)).toBe(false)
+test('daily tolerance ±20 kcal / ±5 g', () => {
+  const goal = { kcal: 2000, protein: 150, carbs: 200, fat: 60 }
+  expect(withinTolerance({ kcal: 2020, protein: 145, carbs: 205, fat: 60 }, goal, DAY_TOLERANCE)).toBe(true)
+  expect(withinTolerance({ kcal: 2021, protein: 150, carbs: 200, fat: 60 }, goal, DAY_TOLERANCE)).toBe(false)
+  expect(withinTolerance({ kcal: 2000, protein: 150, carbs: 200, fat: 54 }, goal, DAY_TOLERANCE)).toBe(false)
 })
 
-test('alimento borrado cuenta como 0', () => {
-  expect(totalDia(alimentos, { nombre: 'x', comidas: [{ items: [{ alimentoId: 'nope', cantidad: 1 }] }] })).toEqual({ kcal: 0, p: 0, hc: 0, g: 0 })
+test('a deleted food counts as zero', () => {
+  expect(dayTotal(foods, { name: 'x', meals: [{ items: [{ foodId: 'nope', amount: 1 }] }] })).toEqual({ kcal: 0, protein: 0, carbs: 0, fat: 0 })
 })

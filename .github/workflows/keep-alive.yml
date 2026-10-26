@@ -1,15 +1,15 @@
-# Calls latido() in Supabase every 5 days so the free tier doesn't pause the project.
+# Calls keep_alive() in Supabase every 5 days so the free tier doesn't pause the project.
 name: Supabase keep-alive
 on:
   schedule:
     - cron: '0 8 */5 * *'
   workflow_dispatch:
 jobs:
-  latido:
+  keep-alive:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -fsS -X POST "$URL/rest/v1/rpc/latido" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
+          curl -fsS -X POST "$URL/rest/v1/rpc/keep_alive" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
         env:
           URL: ${{ secrets.SUPABASE_URL }}
           KEY: ${{ secrets.SUPABASE_KEY }}

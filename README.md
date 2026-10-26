@@ -32,7 +32,7 @@ OpenBites is a personal meal-planning web app. You build a weekly (or two-week, 
 
 All the domain logic lives in [`src/core`](src/core) as pure, dependency-free TypeScript, so it's fully unit-tested and independent of React and Supabase.
 
-### Macro adjuster ([`ajustador.ts`](src/core/ajustador.ts))
+### Macro adjuster ([`adjuster.ts`](src/core/adjuster.ts))
 
 Deterministic search over “moves” (change, add, remove, swap) with at most two foods involved:
 
@@ -42,13 +42,13 @@ Deterministic search over “moves” (change, add, remove, swap) with at most t
 
 With ~200 foods this is about 20k small systems and runs in roughly 250 ms.
 
-### Package waste ([`envases.ts`](src/core/envases.ts))
+### Package waste ([`packages.ts`](src/core/packages.ts))
 
 The menu is treated as a repeating cycle. The simulation opens a package at first use, consumes each portion, and discards leftovers once the package has been open longer than its shelf life. Averaging over many cycles gives packages bought and grams wasted per cycle, which also drive the shopping list.
 
 ### Data model
 
-A single `objetos` table stores each food, day type and menu as a JSON document (`tipo` + `data jsonb`), protected by RLS (`user_id = auth.uid()`). Menus are always read and edited as a whole, so there's nothing to gain from normalizing them.
+A single `objects` table stores each food, day type and menu as a JSON document (`kind` + `data jsonb`), protected by RLS (`user_id = auth.uid()`). Menus are always read and edited as a whole, so there's nothing to gain from normalizing them.
 
 ## Running locally
 
@@ -63,7 +63,7 @@ npm test
 
 1. Create a project and run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor.
 2. In **Authentication → URL Configuration**, set the Site URL to your app URL (e.g. `http://localhost:5173`).
-3. Optional: run [`supabase/latido.sql`](supabase/latido.sql) and add `SUPABASE_URL` / `SUPABASE_KEY` as repository secrets. A [scheduled GitHub Action](.github/workflows/latido.yml) then pings the database every 5 days so the free tier never pauses the project.
+3. Optional: run [`supabase/keep-alive.sql`](supabase/keep-alive.sql) and add `SUPABASE_URL` / `SUPABASE_KEY` as repository secrets. A [scheduled GitHub Action](.github/workflows/keep-alive.yml) then pings the database every 5 days so the free tier never pauses the project.
 
 ## Project docs
 
