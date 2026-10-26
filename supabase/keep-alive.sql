@@ -1,5 +1,5 @@
 -- Run in Supabase > SQL Editor (safe to re-run).
--- Keeps the free tier from pausing the project: a GitHub Action calls keep_alive() every 5 days,
+-- Keeps the free tier from pausing the project: a GitHub Action calls keep_alive() daily,
 -- which inserts a row and deletes it. The table has no RLS policies, so nobody can read or write it through the API.
 create table if not exists heartbeats (id bigint generated always as identity primary key, at timestamptz not null default now());
 alter table heartbeats enable row level security;

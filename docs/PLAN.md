@@ -34,7 +34,7 @@ A single `objects (kind, data jsonb)` table with RLS: every food, dish, day type
 
 ## Risks
 - Adjuster with many foods: pairs are O(n²) ≈ 20k 2×2 systems for 200 foods (~250 ms). If it grows, restrict pairs to meal items × candidates.
-- Supabase free tier pauses after a week of inactivity → scheduled GitHub Action calls `keep_alive()` every 5 days.
+- Supabase free tier pauses after a week of inactivity → scheduled GitHub Action calls `keep_alive()` daily.
 
 ## Verification
 - `npm test` green (core logic).

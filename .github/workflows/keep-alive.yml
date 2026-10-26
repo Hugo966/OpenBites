@@ -1,8 +1,9 @@
-# Calls keep_alive() in Supabase every 5 days so the free tier doesn't pause the project.
+# Calls keep_alive() in Supabase daily so the free tier (paused after 7 idle days) never pauses the project;
+# scheduled runs can be delayed or skipped by GitHub, so daily leaves plenty of margin.
 name: Supabase keep-alive
 on:
   schedule:
-    - cron: '0 8 */5 * *'
+    - cron: '0 8 * * *'
   workflow_dispatch:
 jobs:
   keep-alive:
