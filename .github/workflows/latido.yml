@@ -8,7 +8,8 @@ jobs:
   latido:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsS -X POST "$URL/rest/v1/rpc/latido" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
+      - run: |
+          curl -fsS -X POST "$URL/rest/v1/rpc/latido" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
         env:
           URL: ${{ secrets.SUPABASE_URL }}
           KEY: ${{ secrets.SUPABASE_KEY }}
