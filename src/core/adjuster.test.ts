@@ -69,9 +69,26 @@ test('swap: remove one food and add another', () => {
     x: { id: 'x', name: 'X', per100: { kcal: 100, protein: 10, carbs: 0, fat: 0 } },
     y: { id: 'y', name: 'Y', per100: { kcal: 100, protein: 0, carbs: 10, fat: 0 } },
   }
-  const [best] = adjust(fm, [{ foodId: 'y', amount: 100 }], { target: { protein: 10, carbs: -10 } })
-  expect(amounts(best)).toEqual({ x: 100, y: 0 })
-  expect(apply([{ foodId: 'y', amount: 100 }], best)).toEqual([{ foodId: 'x', amount: 100 }])
+  const options = adjust(fm, [{ foodId: 'y', amount: 100 }], { target: { protein: 10, carbs: -10 } })
+  expect(options[0].within).toBe(true)
+  const swap = options.find(o => amounts(o).x === 100 && amounts(o).y === 0)!
+  expect(swap).toBeDefined()
+  expect(apply([{ foodId: 'y', amount: 100 }], swap)).toEqual([{ foodId: 'x', amount: 100 }])
+})
+
+test('among options within tolerance, the smallest edit wins over a huge one', () => {
+  const fm: FoodMap = {
+    ...foods,
+    milk: { id: 'milk', name: 'Milk', per100: { kcal: 46, protein: 3.2, carbs: 4.7, fat: 1.6 } },
+    turkey: { id: 'turkey', name: 'Turkey', per100: { kcal: 105, protein: 22, carbs: 1, fat: 1.5 } },
+  }
+  const lunch: Item[] = [{ foodId: 'rice', amount: 145 }, { foodId: 'chicken', amount: 170 }, { foodId: 'oil', amount: 15 }]
+  const options = adjust(fm, lunch, { target: { kcal: 0, protein: 20 } })
+  const moved = (o: (typeof options)[number]) => o.changes.reduce((s, c) => s + Math.abs(c.to - c.from), 0)
+  expect(options[0].within).toBe(true)
+  expect(moved(options[0])).toBeLessThan(300) // never "+875 g milk"
+  for (let i = 1; i < options.length; i++)
+    if (options[i].within && options[i].changes.length === options[0].changes.length) expect(moved(options[i])).toBeGreaterThanOrEqual(moved(options[0]))
 })
 
 test('no fixed macros, no options', () => {

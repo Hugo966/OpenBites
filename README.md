@@ -41,7 +41,7 @@ Deterministic search over “moves” (change, add, remove, swap) with at most t
 
 1. Each food contributes a linear vector of macros per gram/unit, weighted by the user's tolerance for each macro.
 2. For one food, the optimal amount is a 1-D least-squares solution; for a pair, a 2×2 normal-equations system. Swaps are “remove A, then solve for B”.
-3. Solutions are rounded to valid steps (5 g / whole units), checked against min/max, de-duplicated, and ranked: *within tolerance* first, then fewer changes, lower weighted error, and fewer grams moved.
+3. Solutions are rounded to valid steps (5 g / whole units), checked against min/max, de-duplicated, and ranked: *within tolerance* first; among those, the smallest edit to the meal wins (fewer changes, then fewer grams moved), so a huge change never beats a small one just for being marginally closer. Outside tolerance, the closest to the target wins.
 
 With ~200 foods this is about 20k small systems and runs in roughly 250 ms.
 

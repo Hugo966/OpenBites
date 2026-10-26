@@ -27,7 +27,7 @@ A personal app (single user, used by family members) to build custom meal plans 
    - Moves: change an existing amount, add a food, remove an item, swap an item; combinations of **up to 2 moves**.
    - Candidates: all foods except `neverSuggest` ones and those excluded in the current request.
    - Amounts: multiples of 5 g; unit-based foods in whole units; respect each food's min/max.
-   - Algorithm: weighted least squares (1-D / 2×2) per food or pair, rounded to valid steps, filtered by limits. Ranking: within tolerance → fewer changes → weighted error → fewer grams moved. Returns the top 5.
+   - Algorithm: weighted least squares (1-D / 2×2) per food or pair, rounded to valid steps, filtered by limits. Ranking: within tolerance → fewer changes → fewer grams moved; outside tolerance → lowest weighted error. Returns the top 5.
    - Default tolerance (editable per request): **±5 kcal, ±2 g per macro**.
    - Bonus: prefer amounts that fit package sizes (see 6).
 6. **Package rule** (warning + suggestion): for foods with a package, count menu uses within `daysOpen` and warn when `size / uses` doesn't fit (leftovers get thrown away). Suggest amounts that fit (size ÷ uses) or adding/removing a use. Example: 200 g guacamole, 7 days open, used once a week → 200 g per use; twice → 100 g.

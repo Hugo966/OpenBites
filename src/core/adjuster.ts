@@ -103,12 +103,14 @@ export function adjust(foods: FoodMap, items: Item[], req: Request): Option[] {
     }
   }
 
-  // Within tolerance first; among those, fewer changes; then lower error and fewer grams moved
+  // Within tolerance first. Among those every option is good enough, so prefer the smallest edit to the meal
+  // (fewer changes, then fewer grams moved) instead of a marginally lower error from a huge change.
+  // Outside tolerance, the closest to the target wins.
   // ponytail: doesn't yet prefer package-friendly amounts (spec 5, bonus); add as a tie-breaker if missed
   const moved = (o: Option) => o.changes.reduce((s, c) => s + Math.abs(grams(foods[c.foodId], c.to - c.from)), 0)
   options.sort((x, y) =>
     Number(y.within) - Number(x.within) ||
-    (x.within ? x.changes.length - y.changes.length : 0) ||
+    (x.within ? x.changes.length - y.changes.length || moved(x) - moved(y) : 0) ||
     x.error - y.error ||
     moved(x) - moved(y))
   return options.slice(0, req.limit ?? 5)
