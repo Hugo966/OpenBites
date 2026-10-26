@@ -1,4 +1,5 @@
 import type { Macros } from './core/types'
+import { r1 } from './format'
 
 const ICONS = {
   menu: 'M4 5h16M4 12h16M4 19h10',
@@ -22,10 +23,6 @@ export function Icon({ n, size = 22 }: { n: keyof typeof ICONS; size?: number })
     </svg>
   )
 }
-
-export const r0 = (n: number) => Math.round(n)
-export const r1 = (n: number) => Math.round(n * 10) / 10
-export const thousands = (n: number) => r0(n).toLocaleString('es-ES')
 
 // Calorie split between protein, carbs and fat
 export function MacroBar({ m }: { m: Macros }) {

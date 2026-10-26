@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { shoppingList, type PackageUsage } from '../core/packages'
 import type { FoodMap, Menu } from '../core/types'
-import { Icon, thousands } from '../ui'
+import { thousands } from '../format'
+import { Icon } from '../ui'
 
 const qty = (foods: FoodMap, id: string, n: number) =>
   foods[id]?.gramsPerUnit ? `${Math.round(n * 10) / 10} ud` : `${thousands(n)} g`

@@ -20,6 +20,8 @@ export function useObjects<T extends { id: string }>(kind: Kind) {
   }, [kind])
 
   useEffect(() => {
+    // Syncing with an external system (Supabase); state is set after the fetch resolves
+    // oxlint-disable-next-line react/set-state-in-effect
     load()
     window.addEventListener('focus', load)
     return () => window.removeEventListener('focus', load)

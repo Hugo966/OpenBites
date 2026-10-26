@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { adjust, apply, type Option } from '../core/adjuster'
 import { MACROS, MEAL_TOLERANCE, mealTotal } from '../core/macros'
 import type { FoodMap, Item, Macros, Meal } from '../core/types'
-import { Icon, r0 } from '../ui'
+import { r0 } from '../format'
+import { Icon } from '../ui'
 
 const LABEL = { kcal: 'Calorías', protein: 'Proteína', carbs: 'Hidratos', fat: 'Grasa' } as const
 const UNIT = { kcal: 'kcal', protein: 'g', carbs: 'g', fat: 'g' } as const
@@ -27,12 +28,12 @@ export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
     if (!meal) ref.current?.close()
   }, [meal])
 
-  const request: Partial<Macros> = Object.fromEntries(
-    Object.entries(target).filter(([, v]) => v !== '' && !isNaN(Number(v))).map(([k, v]) => [k, Number(v)]))
+  const request: Partial<Macros> = useMemo(() => Object.fromEntries(
+    Object.entries(target).filter(([, v]) => v !== '' && !isNaN(Number(v))).map(([k, v]) => [k, Number(v)])), [target])
 
   const options = useMemo(
     () => (meal ? adjust(foods, meal.items, { target: request, tolerance: tol, exclude }) : []),
-    [meal, foods, JSON.stringify(request), tol, exclude]) // eslint-disable-line react-hooks/exhaustive-deps
+    [meal, foods, request, tol, exclude])
 
   if (!meal) return <dialog ref={ref} className="sheet" onClose={onClose} />
   const now = mealTotal(foods, meal)

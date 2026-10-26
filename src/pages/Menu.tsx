@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { DAY_TOLERANCE, dayTotal, isFreeDay, itemMacros, MACROS, mealTotal, subtract, withinTolerance } from '../core/macros'
+import { DAY_TOLERANCE, dayTotal, dominantMacro, isFreeDay, itemMacros, MACROS, mealTotal, subtract, withinTolerance } from '../core/macros'
 import { analyzePackages } from '../core/packages'
 import type { DayType, Food, FoodMap, Macros, Meal, Menu } from '../core/types'
 import { useObjects } from '../db'
-import { Icon, MacroChips, r0, thousands } from '../ui'
+import { r0, thousands } from '../format'
+import { Icon, MacroChips } from '../ui'
 import { Adjuster } from './Adjuster'
-import { dominantMacro, FoodDialog } from './Foods'
+import { FoodDialog } from './Foods'
 import { PackageWarnings, ShoppingDialog } from './Shopping'
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -287,7 +288,7 @@ function FoodPicker({ open, foods, onPick, onCreate, onClose }: {
   const ref = useRef<HTMLDialogElement>(null)
   const [q, setQ] = useState('')
   useEffect(() => {
-    if (open) { setQ(''); ref.current?.showModal() } else ref.current?.close()
+    if (open) ref.current?.showModal(); else ref.current?.close()
   }, [open])
 
   const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
@@ -295,7 +296,7 @@ function FoodPicker({ open, foods, onPick, onCreate, onClose }: {
   const create = () => onCreate(q.trim())
 
   return (
-    <dialog ref={ref} className="sheet picker" onClose={onClose}>
+    <dialog ref={ref} className="sheet picker" onClose={() => { setQ(''); onClose() }}>
       <div className="picker-header">
         <label className="search">
           <Icon n="search" size={18} />

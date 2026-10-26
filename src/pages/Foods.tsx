@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { dominantMacro } from '../core/macros'
 import type { Food } from '../core/types'
 import { useObjects } from '../db'
-import { Icon, MacroBar, MacroChips, r0 } from '../ui'
+import { r0 } from '../format'
+import { Icon, MacroBar, MacroChips } from '../ui'
 
 const num = (f: FormData, k: string) => {
   const v = f.get(k) as string
@@ -21,10 +23,6 @@ function readForm(f: FormData, id: string): Food {
     neverSuggest: f.get('neverSuggest') === 'on' || undefined,
   }
 }
-
-// Avatar color: the macro that contributes the most calories
-export const dominantMacro = ({ protein, carbs, fat }: Food['per100']) =>
-  protein * 4 >= carbs * 4 && protein * 4 >= fat * 9 ? 'protein' : carbs * 4 >= fat * 9 ? 'carbs' : 'fat'
 
 // `food`: null = closed; without id = new (may come with the name already typed)
 export function FoodDialog({ food, onSave, onDelete, onClose }: {

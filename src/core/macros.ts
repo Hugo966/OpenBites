@@ -37,5 +37,9 @@ export const menuTotal = (foods: FoodMap, m: Menu) =>
 // A day with a free meal is not compared against its goal
 export const isFreeDay = (d: Day) => d.meals.some(m => m.free)
 
+// The macro that contributes the most calories (used for colors)
+export const dominantMacro = ({ protein, carbs, fat }: Macros) =>
+  protein * 4 >= carbs * 4 && protein * 4 >= fat * 9 ? 'protein' : carbs * 4 >= fat * 9 ? 'carbs' : 'fat'
+
 export const withinTolerance = (actual: Macros, goal: Macros, tolerance: Macros) =>
   MACROS.every(k => Math.abs(actual[k] - goal[k]) <= tolerance[k])
