@@ -3,11 +3,10 @@ import { adjust, apply, type Option } from '../core/adjuster'
 import { MACROS, MEAL_TOLERANCE, mealTotal } from '../core/macros'
 import type { FoodMap, Item, Macros, Meal } from '../core/types'
 import { r0 } from '../format'
+import { useT } from '../i18n'
 import { Icon } from '../ui'
 
-const LABEL = { kcal: 'Calorías', protein: 'Proteína', carbs: 'Hidratos', fat: 'Grasa' } as const
 const UNIT = { kcal: 'kcal', protein: 'g', carbs: 'g', fat: 'g' } as const
-const SHORT = { kcal: ' kcal', protein: ' P', carbs: ' HC', fat: ' G' } as const
 const signed = (n: number) => { const v = r0(n); return (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v) }
 
 export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
@@ -18,6 +17,7 @@ export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
   onApply: (items: Item[]) => void
   onClose: () => void
 }) {
+  const { t } = useT()
   const ref = useRef<HTMLDialogElement>(null)
   const [target, setTarget] = useState<Record<string, string>>({})
   const [exclude, setExclude] = useState<string[]>([])
@@ -38,11 +38,12 @@ export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
   if (!meal) return <dialog ref={ref} className="sheet" onClose={onClose} />
   const now = mealTotal(foods, meal)
   const name = (id: string) => foods[id]?.name ?? '?'
-  const qty = (id: string, n: number) => `${n} ${foods[id]?.gramsPerUnit ? 'ud' : 'g'}`
+  const qty = (id: string, n: number) => `${n} ${foods[id]?.gramsPerUnit ? t.unit : 'g'}`
+  const short = (k: (typeof MACROS)[number]) => (k === 'kcal' ? ' kcal' : ` ${t.short[k]}`)
 
   function describe(c: Option['changes'][number]) {
     if (c.from === 0) return <><b className="plus">+</b> {name(c.foodId)} <b>{qty(c.foodId, c.to)}</b></>
-    if (c.to === 0) return <><b className="minus">−</b> Quitar {name(c.foodId)}</>
+    if (c.to === 0) return <><b className="minus">−</b> {t.removeFood(name(c.foodId))}</>
     return <>{name(c.foodId)} {qty(c.foodId, c.from)} → <b>{qty(c.foodId, c.to)}</b></>
   }
 
@@ -50,30 +51,30 @@ export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
     <dialog ref={ref} className="sheet adjuster" onClose={onClose}>
       <div className="sheet-body">
         <div className="sheet-header">
-          <h2>Ajustar {title}</h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Cerrar"><Icon n="close" /></button>
+          <h2>{t.adjustTitle(title)}</h2>
+          <button type="button" className="icon-btn" onClick={onClose} aria-label={t.close}><Icon n="close" /></button>
         </div>
-        <p className="muted">Ahora: {r0(now.kcal)} kcal · {r0(now.protein)} P · {r0(now.carbs)} HC · {r0(now.fat)} G. Indica cuánto quieres cambiar; deja vacío lo que te dé igual.</p>
+        <p className="muted">{t.now(r0(now.kcal), r0(now.protein), r0(now.carbs), r0(now.fat))}</p>
 
         <div className="request">
           {MACROS.map(k => (
-            <label key={k} className={k === 'kcal' ? '' : k}>{LABEL[k]} ({UNIT[k]})
-              <input type="number" inputMode="decimal" step="any" placeholder="libre" value={target[k] ?? ''}
-                onChange={e => setTarget(t => ({ ...t, [k]: e.target.value }))} />
-              <small>± <input className="tol" type="number" min="0" step="any" value={tol[k]} aria-label={`Margen ${LABEL[k]}`}
-                onChange={e => setTol(t => ({ ...t, [k]: Number(e.target.value) || 0 }))} /></small>
+            <label key={k} className={k === 'kcal' ? '' : k}>{t.macro[k]} ({UNIT[k]})
+              <input type="number" inputMode="decimal" step="any" placeholder={t.any} value={target[k] ?? ''}
+                onChange={e => setTarget(x => ({ ...x, [k]: e.target.value }))} />
+              <small>± <input className="tol" type="number" min="0" step="any" value={tol[k]} aria-label={t.tolerance(t.macro[k])}
+                onChange={e => setTol(x => ({ ...x, [k]: Number(e.target.value) || 0 }))} /></small>
             </label>
           ))}
         </div>
         {missing && (
           <button className="secondary" onClick={() => setTarget(Object.fromEntries(MACROS.map(k => [k, String(r0(missing[k]))])))}>
-            Lo que le falta al día ({signed(missing.kcal)} kcal)
+            {t.missingForDay(signed(missing.kcal))}
           </button>
         )}
 
         {exclude.length > 0 && (
           <div className="chips">
-            <span className="muted">Sin:</span>
+            <span className="muted">{t.without}</span>
             {exclude.map(id => (
               <button key={id} className="chip excluded" onClick={() => setExclude(x => x.filter(e => e !== id))}>
                 {name(id)} <Icon n="close" size={12} />
@@ -83,25 +84,25 @@ export function Adjuster({ title, meal, foods, missing, onApply, onClose }: {
         )}
 
         <ol className="options">
-          {!Object.keys(request).length && <li className="muted">Pon al menos un macro.</li>}
-          {Object.keys(request).length > 0 && !options.length && <li className="muted">No encuentro nada que encaje.</li>}
+          {!Object.keys(request).length && <li className="muted">{t.pickAMacro}</li>}
+          {Object.keys(request).length > 0 && !options.length && <li className="muted">{t.nothingFits}</li>}
           {options.map((o, i) => (
             <li key={i} className={`option card ${o.within ? 'ok' : ''}`}>
               <ul className="changes">
                 {o.changes.map(c => (
                   <li key={c.foodId}>
                     <span>{describe(c)}</span>
-                    <button className="icon-btn mini" title="No usar este alimento" aria-label={`No usar ${name(c.foodId)}`}
+                    <button className="icon-btn mini" title={t.dontUse} aria-label={t.dontUseX(name(c.foodId))}
                       onClick={() => setExclude(x => [...x, c.foodId])}><Icon n="close" size={14} /></button>
                   </li>
                 ))}
               </ul>
               <div className="result">
                 {MACROS.map(k => (
-                  <span key={k} className={`${k} ${k in request ? 'fixed' : ''}`}>{signed(o.delta[k])}{SHORT[k]}</span>
+                  <span key={k} className={`${k} ${k in request ? 'fixed' : ''}`}>{signed(o.delta[k])}{short(k)}</span>
                 ))}
                 <button className="primary" onClick={() => { onApply(apply(meal.items, o)); onClose() }}>
-                  {o.within ? '✓ ' : ''}Aplicar
+                  {o.within ? '✓ ' : ''}{t.apply}
                 </button>
               </div>
             </li>

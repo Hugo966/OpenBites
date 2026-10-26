@@ -72,7 +72,7 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
   .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; padding: 0 12px 20px; }
   .nav button { display: flex; align-items: center; gap: 12px; font-size: .95rem; padding: 10px 12px; }
   .nav button[aria-current='page'] { background: var(--accent-soft); }
-  .nav .logout { margin-top: auto; }
+  .nav .nav-lang { margin-top: auto; }
 }
 
 /* Cards */
@@ -135,6 +135,8 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
 
 /* Login */
 .login { max-width: 380px; margin: 0 auto; padding: 14vh 16px 16px; text-align: center; }
+.login-lang { position: fixed; top: 16px; right: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 12px; color: var(--muted); font-weight: 700; font-size: .85rem; }
+.login-lang:hover { color: var(--accent); }
 .login h1 { margin: 12px 0 4px; }
 .login form { display: grid; gap: 14px; margin-top: 24px; text-align: left; }
 
@@ -144,7 +146,7 @@ label.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
 .menu-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-right: 16px; }
 .menu-title { font-size: 1.75rem; font-weight: 800; letter-spacing: -.02em; border: 0; background: none; padding: 4px 0; width: auto; flex: 1 1 200px; min-width: 0; }
 .menu-title:focus { background: var(--card); padding: 4px 8px; }
-.menu-actions { display: flex; gap: 6px; align-items: center; }
+.menu-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .save-state { font-size: .75rem; min-width: 70px; }
 .summary { margin: 4px 0 14px; }
 

@@ -1,5 +1,6 @@
 import type { Macros } from './core/types'
 import { r1 } from './format'
+import { setLang, useT } from './i18n'
 
 const ICONS = {
   menu: 'M4 5h16M4 12h16M4 19h10',
@@ -13,6 +14,7 @@ const ICONS = {
   copy: 'M9 9h10v10H9zM5 15V5h10',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   logout: 'M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3',
+  globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z',
 }
 
 export function Icon({ n, size = 22 }: { n: keyof typeof ICONS; size?: number }) {
@@ -24,11 +26,22 @@ export function Icon({ n, size = 22 }: { n: keyof typeof ICONS; size?: number })
   )
 }
 
+export function LangToggle({ className = '' }: { className?: string }) {
+  const { t, lang } = useT()
+  return (
+    <button className={`lang-toggle ${className}`} aria-label={t.switchLabel} title={t.switchLabel}
+      onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>
+      <Icon n="globe" /> <span>{t.switchToShort}</span>
+    </button>
+  )
+}
+
 // Calorie split between protein, carbs and fat
 export function MacroBar({ m }: { m: Macros }) {
+  const { t } = useT()
   const p = m.protein * 4, c = m.carbs * 4, f = m.fat * 9, total = p + c + f || 1
   return (
-    <div className="macro-bar" role="img" aria-label={`Proteína ${r1(m.protein)} g, hidratos ${r1(m.carbs)} g, grasa ${r1(m.fat)} g`}>
+    <div className="macro-bar" role="img" aria-label={t.macroBarLabel(r1(m.protein), r1(m.carbs), r1(m.fat))}>
       {p > 0 && <span className="protein" style={{ width: `${(p / total) * 100}%` }} />}
       {c > 0 && <span className="carbs" style={{ width: `${(c / total) * 100}%` }} />}
       {f > 0 && <span className="fat" style={{ width: `${(f / total) * 100}%` }} />}
@@ -37,11 +50,12 @@ export function MacroBar({ m }: { m: Macros }) {
 }
 
 export function MacroChips({ m }: { m: Macros }) {
+  const { t } = useT()
   return (
     <div className="chips">
-      <span className="chip protein"><b>{r1(m.protein)}</b> P</span>
-      <span className="chip carbs"><b>{r1(m.carbs)}</b> HC</span>
-      <span className="chip fat"><b>{r1(m.fat)}</b> G</span>
+      <span className="chip protein"><b>{r1(m.protein)}</b> {t.short.protein}</span>
+      <span className="chip carbs"><b>{r1(m.carbs)}</b> {t.short.carbs}</span>
+      <span className="chip fat"><b>{r1(m.fat)}</b> {t.short.fat}</span>
     </div>
   )
 }

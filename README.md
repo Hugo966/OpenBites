@@ -6,7 +6,7 @@ OpenBites is a personal meal-planning web app. You build a weekly (or two-week, 
 
 **Live:** [open-bites.vercel.app](https://open-bites.vercel.app)
 
-> The UI is in **Spanish** on purpose: it's built for my family, who will use it day to day.
+> Built for my family, who use it day to day in **Spanish**; the UI is fully bilingual (Spanish / English) with a toggle, and defaults to the browser's language.
 
 ![Weekly menu grid](docs/screenshots/menu.png)
 
@@ -19,6 +19,7 @@ OpenBites is a personal meal-planning web app. You build a weekly (or two-week, 
 - **Package waste warnings** — simulates opening and finishing packages across repeated weeks and tells you when a portion doesn't fit (“you throw away 140 g of guacamole every week — use 200 g × 1 or 100 g × 2”).
 - **Shopping list** — totals per food for the whole menu, in grams, units or packages.
 - **Synced across devices** — data lives in Supabase behind passwordless email login; responsive layout for phone and desktop, light and dark themes.
+- **Bilingual UI** — Spanish and English via a typed dictionary ([`i18n.ts`](src/i18n.ts)): the compiler rejects a missing translation, no i18n library needed.
 
 | Macro adjuster | Shopping list | Mobile |
 |---|---|---|

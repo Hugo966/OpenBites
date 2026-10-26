@@ -4,19 +4,22 @@ import { analyzePackages } from '../core/packages'
 import type { DayType, Food, FoodMap, Macros, Meal, Menu } from '../core/types'
 import { useObjects } from '../db'
 import { r0, thousands } from '../format'
+import { texts, useT } from '../i18n'
 import { Icon, MacroChips } from '../ui'
 import { Adjuster } from './Adjuster'
 import { FoodDialog } from './Foods'
 import { PackageWarnings, ShoppingDialog } from './Shopping'
 
-const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const MEAL_NAMES = ['Desayuno', 'Comida', 'Merienda', 'Cena']
 const emptyMeals = (n: number): Meal[] => Array.from({ length: n }, () => ({ items: [] }))
 
-const newMenu = (): Menu => ({
-  id: crypto.randomUUID(), name: 'Mi menú', mealNames: [...MEAL_NAMES],
-  days: DAY_NAMES.map(name => ({ name, meals: emptyMeals(MEAL_NAMES.length) })),
-})
+// Default names are created in the current language; afterwards they're the user's own data
+function newMenu(): Menu {
+  const t = texts()
+  return {
+    id: crypto.randomUUID(), name: t.myMenu, mealNames: [...t.mealNames],
+    days: t.dayNames.map(name => ({ name, meals: emptyMeals(t.mealNames.length) })),
+  }
+}
 
 const storage = {
   get: (k: string) => { try { return localStorage.getItem(k) } catch { return null } },
@@ -26,6 +29,7 @@ const storage = {
 type Cell = { d: number; m: number } // day index, meal row index
 
 export default function MenuPage() {
+  const { t } = useT()
   const menus = useObjects<Menu>('menu')
   const foodList = useObjects<Food>('food')
   const dayTypes = useObjects<DayType>('dayType')
@@ -73,13 +77,13 @@ export default function MenuPage() {
   if (!menus.loaded) return null
   if (!menu) return (
     <div className="empty">
-      <h1>Tu menú</h1>
-      <p>Crea un menú semanal: 7 días × desayuno, comida, merienda y cena. Luego lo adaptas a lo que quieras.</p>
-      <button className="primary" onClick={() => create(newMenu())}>Crear mi primer menú</button>
+      <h1>{t.yourMenu}</h1>
+      <p>{t.menuIntro}</p>
+      <button className="primary" onClick={() => create(newMenu())}>{t.createFirstMenu}</button>
     </div>
   )
 
-  const typesById = Object.fromEntries(dayTypes.items.map(t => [t.id, t]))
+  const typesById = Object.fromEntries(dayTypes.items.map(dt => [dt.id, dt]))
   const packages = analyzePackages(foods, menu)
   const wasteful = new Set(packages.filter(p => p.wasted > 1).map(p => p.foodId))
   const regularDays = menu.days.filter(d => !isFreeDay(d))
@@ -88,24 +92,24 @@ export default function MenuPage() {
   return (
     <>
       <div className="menu-bar">
-        <input className="menu-title" value={menu.name} aria-label="Nombre del menú"
+        <input className="menu-title" value={menu.name} aria-label={t.menuName}
           onChange={e => edit(m => { m.name = e.target.value })} />
         {menus.items.length > 1 && (
-          <select value={menu.id} onChange={e => select(e.target.value)} aria-label="Cambiar de menú">
+          <select value={menu.id} onChange={e => select(e.target.value)} aria-label={t.switchMenu}>
             {[...menus.items].sort((a, b) => a.name.localeCompare(b.name)).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
           </select>
         )}
         <div className="menu-actions">
-          <button className="secondary" onClick={() => setShopping(true)}><Icon n="cart" size={18} /> Compra</button>
-          <button className="secondary" onClick={() => create(newMenu())}><Icon n="plus" size={18} /> Nuevo</button>
-          <button className="secondary" onClick={() => create({ ...structuredClone(menu), id: crypto.randomUUID(), name: `${menu.name} (copia)` })}><Icon n="copy" size={18} /> Duplicar</button>
-          <button className="icon-btn" aria-label="Borrar menú" onClick={async () => {
-            if (confirm(`¿Borrar el menú «${menu.name}»?`)) { setDraft(null); await menus.remove(menu.id) }
+          <button className="secondary" onClick={() => setShopping(true)}><Icon n="cart" size={18} /> {t.shopping}</button>
+          <button className="secondary" onClick={() => create(newMenu())}><Icon n="plus" size={18} /> {t.newMenu}</button>
+          <button className="secondary" onClick={() => create({ ...structuredClone(menu), id: crypto.randomUUID(), name: t.copyOf(menu.name) })}><Icon n="copy" size={18} /> {t.duplicate}</button>
+          <button className="icon-btn" aria-label={t.deleteMenu} onClick={async () => {
+            if (confirm(t.confirmDeleteMenu(menu.name))) { setDraft(null); await menus.remove(menu.id) }
           }}><Icon n="trash" size={18} /></button>
         </div>
-        <span className="muted save-state">{draft ? 'Guardando…' : 'Guardado'}</span>
+        <span className="muted save-state">{draft ? t.saving : t.saved}</span>
       </div>
-      <p className="muted summary">{menu.days.length} días · media <b>{thousands(average)} kcal/día</b>{regularDays.length < menu.days.length && ' (sin contar días libres)'}</p>
+      <p className="muted summary">{t.menuSummary(menu.days.length)}<b>{t.avgPerDay(thousands(average))}</b>{regularDays.length < menu.days.length && t.excludingFreeDays}</p>
       {menus.error && <p role="alert" className="error">{menus.error}</p>}
       <PackageWarnings usages={packages} foods={foods} days={menu.days.length} />
 
@@ -118,17 +122,17 @@ export default function MenuPage() {
                 <th key={d} scope="col">
                   <div className="day-header">
                     <div className="row">
-                      <input className="day-name" value={day.name} aria-label="Nombre del día"
+                      <input className="day-name" value={day.name} aria-label={t.dayName}
                         onChange={e => edit(m => { m.days[d].name = e.target.value })} />
-                      <button className="icon-btn mini" aria-label={`Duplicar ${day.name}`}
-                        onClick={() => edit(m => { m.days.splice(d + 1, 0, { ...structuredClone(m.days[d]), name: `${m.days[d].name} (copia)` }) })}><Icon n="copy" size={16} /></button>
-                      <button className="icon-btn mini" aria-label={`Borrar ${day.name}`}
-                        onClick={() => confirm(`¿Borrar ${day.name}?`) && edit(m => { m.days.splice(d, 1) })}><Icon n="trash" size={16} /></button>
+                      <button className="icon-btn mini" aria-label={t.duplicateX(day.name)}
+                        onClick={() => edit(m => { m.days.splice(d + 1, 0, { ...structuredClone(m.days[d]), name: t.copyOf(m.days[d].name) }) })}><Icon n="copy" size={16} /></button>
+                      <button className="icon-btn mini" aria-label={t.deleteX(day.name)}
+                        onClick={() => confirm(t.confirmDelete(day.name)) && edit(m => { m.days.splice(d, 1) })}><Icon n="trash" size={16} /></button>
                     </div>
-                    <select value={day.dayTypeId ?? ''} aria-label="Tipo de día"
+                    <select value={day.dayTypeId ?? ''} aria-label={t.dayType}
                       onChange={e => edit(m => { m.days[d].dayTypeId = e.target.value || undefined })}>
-                      <option value="">{dayTypes.items.length ? 'Sin objetivo' : 'Sin objetivo (créalos en Objetivos)'}</option>
-                      {dayTypes.items.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      <option value="">{dayTypes.items.length ? t.noGoal : t.noGoalHint}</option>
+                      {dayTypes.items.map(dt => <option key={dt.id} value={dt.id}>{dt.name}</option>)}
                     </select>
                     <DaySummary total={dayTotal(foods, day)} goal={typesById[day.dayTypeId ?? '']?.goal} free={isFreeDay(day)} />
                   </div>
@@ -136,8 +140,8 @@ export default function MenuPage() {
               ))}
               <th className="add-col">
                 <button className="ghost" onClick={() => edit(m => {
-                  m.days.push({ name: DAY_NAMES[m.days.length % 7], meals: emptyMeals(m.mealNames.length) })
-                })}><Icon n="plus" /> Día</button>
+                  m.days.push({ name: t.dayNames[m.days.length % 7], meals: emptyMeals(m.mealNames.length) })
+                })}><Icon n="plus" /> {t.day}</button>
               </th>
             </tr>
           </thead>
@@ -145,10 +149,10 @@ export default function MenuPage() {
             {menu.mealNames.map((mealName, row) => (
               <tr key={row}>
                 <th scope="row">
-                  <input className="row-name" value={mealName} aria-label="Nombre de la comida"
+                  <input className="row-name" value={mealName} aria-label={t.mealName}
                     onChange={e => edit(m => { m.mealNames[row] = e.target.value })} />
-                  <button className="icon-btn mini" aria-label={`Borrar fila ${mealName}`}
-                    onClick={() => confirm(`¿Borrar la fila «${mealName}» en todos los días?`) && edit(m => {
+                  <button className="icon-btn mini" aria-label={t.deleteRow(mealName)}
+                    onClick={() => confirm(t.confirmDeleteRow(mealName)) && edit(m => {
                       m.mealNames.splice(row, 1)
                       m.days.forEach(day => day.meals.splice(row, 1))
                     })}><Icon n="trash" size={16} /></button>
@@ -167,9 +171,9 @@ export default function MenuPage() {
             <tr>
               <th scope="row">
                 <button className="ghost" onClick={() => edit(m => {
-                  m.mealNames.push('Nueva comida')
+                  m.mealNames.push(t.newMeal)
                   m.days.forEach(day => day.meals.push({ items: [] }))
-                })}><Icon n="plus" /> Comida</button>
+                })}><Icon n="plus" /> {t.meal}</button>
               </th>
             </tr>
           </tbody>
@@ -198,7 +202,8 @@ export default function MenuPage() {
 }
 
 function DaySummary({ total, goal, free }: { total: Macros; goal?: Macros; free: boolean }) {
-  if (free) return <div className="day-summary free"><b>{thousands(total.kcal)}</b> kcal · día libre</div>
+  const { t } = useT()
+  if (free) return <div className="day-summary free"><b>{thousands(total.kcal)}</b> kcal · {t.freeDay}</div>
   if (!goal) return <div className="day-summary"><b>{thousands(total.kcal)}</b> kcal<MacroChips m={total} /></div>
   const ok = withinTolerance(total, goal, DAY_TOLERANCE)
   const pct = Math.min(100, (total.kcal / (goal.kcal || 1)) * 100)
@@ -210,7 +215,7 @@ function DaySummary({ total, goal, free }: { total: Macros; goal?: Macros; free:
         {MACROS.slice(1).map(k => {
           const diff = total[k] - goal[k]
           return (
-            <span key={k} className={k} title={`${diff > 0 ? 'sobran' : 'faltan'} ${Math.abs(r0(diff))} g`}>
+            <span key={k} className={k} title={diff > 0 ? t.over(Math.abs(r0(diff))) : t.under(Math.abs(r0(diff)))}>
               <b>{r0(total[k])}</b>/{r0(goal[k])}
               {Math.abs(diff) > DAY_TOLERANCE[k] && <small>{diff > 0 ? '+' : '−'}{Math.abs(r0(diff))}</small>}
             </span>
@@ -230,33 +235,34 @@ function MealCell({ title, meal, foods, wasteful, onAdd, onAdjust, onChange }: {
   onAdjust: () => void
   onChange: (f: (m: Meal) => void) => void
 }) {
+  const { t } = useT()
   const total = mealTotal(foods, meal)
   return (
     <div className={`cell ${meal.free ? 'is-free' : ''}`}>
       <div className="cell-title">{title}</div>
       {meal.free
-        ? <div className="free-label">Comida libre</div>
+        ? <div className="free-label">{t.freeMeal}</div>
         : meal.items.map((it, i) => {
           const f = foods[it.foodId]
           return (
             <div className="item" key={i}>
               <span className={`dot ${f ? dominantMacro(f.per100) : ''}`} />
               <span className={`item-name ${wasteful.has(it.foodId) ? 'warn' : ''}`}
-                title={wasteful.has(it.foodId) ? `${f?.name}: el envase no cuadra, mira los avisos` : f?.name}>{f?.name ?? 'Alimento borrado'}</span>
+                title={wasteful.has(it.foodId) && f ? t.wasteTitle(f.name) : f?.name}>{f?.name ?? t.deletedFood}</span>
               <AmountInput value={it.amount} step={f?.gramsPerUnit ? 1 : 5}
                 onChange={v => onChange(m => { m.items[i].amount = v })} />
-              <span className="unit">{f?.gramsPerUnit ? 'ud' : 'g'}</span>
+              <span className="unit">{f?.gramsPerUnit ? t.unit : 'g'}</span>
               <span className="item-kcal">{r0(itemMacros(foods, it).kcal)}</span>
-              <button className="remove" aria-label={`Quitar ${f?.name ?? 'alimento'}`}
+              <button className="remove" aria-label={t.removeX(f?.name ?? t.aFood)}
                 onClick={() => onChange(m => { m.items.splice(i, 1) })}><Icon n="close" size={14} /></button>
             </div>
           )
         })}
       <div className="cell-footer">
-        {!meal.free && <button className="add" onClick={onAdd}><Icon n="plus" size={16} /> Añadir</button>}
-        {!meal.free && meal.items.length > 0 && <button className="add" onClick={onAdjust} aria-label={`Ajustar ${title}`} title="Ajustar macros"><Icon n="adjust" size={16} /></button>}
+        {!meal.free && <button className="add" onClick={onAdd}><Icon n="plus" size={16} /> {t.add}</button>}
+        {!meal.free && meal.items.length > 0 && <button className="add" onClick={onAdjust} aria-label={t.adjustX(title)} title={t.adjustMacros}><Icon n="adjust" size={16} /></button>}
         <button className={`free-toggle ${meal.free ? 'active' : ''}`} aria-pressed={!!meal.free}
-          onClick={() => onChange(m => { m.free = !m.free || undefined })}>Libre</button>
+          onClick={() => onChange(m => { m.free = !m.free || undefined })}>{t.free}</button>
         {!meal.free && meal.items.length > 0 && <span className="cell-total">{r0(total.kcal)} kcal</span>}
       </div>
     </div>
@@ -265,10 +271,11 @@ function MealCell({ title, meal, foods, wasteful, onAdd, onAdjust, onChange }: {
 
 // Number input that can be cleared and retyped without jumping to 0
 function AmountInput({ value, step, onChange }: { value: number; step: number; onChange: (v: number) => void }) {
+  const { t } = useT()
   const [text, setText] = useState(String(value))
   const [focused, setFocused] = useState(false)
   return (
-    <input className="amount" type="number" inputMode="decimal" min="0" step={step} value={focused ? text : String(value)} aria-label="Cantidad"
+    <input className="amount" type="number" inputMode="decimal" min="0" step={step} value={focused ? text : String(value)} aria-label={t.amount}
       onFocus={e => { setText(String(value)); setFocused(true); e.target.select() }}
       onBlur={() => setFocused(false)}
       onChange={e => {
@@ -285,6 +292,7 @@ function FoodPicker({ open, foods, onPick, onCreate, onClose }: {
   onCreate: (name: string) => void
   onClose: () => void
 }) {
+  const { t } = useT()
   const ref = useRef<HTMLDialogElement>(null)
   const [q, setQ] = useState('')
   useEffect(() => {
@@ -300,10 +308,10 @@ function FoodPicker({ open, foods, onPick, onCreate, onClose }: {
       <div className="picker-header">
         <label className="search">
           <Icon n="search" size={18} />
-          <input autoFocus placeholder="Buscar o crear alimento" value={q} onChange={e => setQ(e.target.value)} aria-label="Buscar alimento"
+          <input autoFocus placeholder={t.searchOrCreate} value={q} onChange={e => setQ(e.target.value)} aria-label={t.searchFood}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (results[0]) onPick(results[0]); else if (q.trim()) create() } }} />
         </label>
-        <button className="icon-btn" onClick={onClose} aria-label="Cerrar"><Icon n="close" /></button>
+        <button className="icon-btn" onClick={onClose} aria-label={t.close}><Icon n="close" /></button>
       </div>
       <ul className="picker-list">
         {results.map(f => (
@@ -311,13 +319,13 @@ function FoodPicker({ open, foods, onPick, onCreate, onClose }: {
             <button onClick={() => onPick(f)}>
               <span className={`dot ${dominantMacro(f.per100)}`} />
               <span className="item-name">{f.name}</span>
-              <span className="muted">{r0(f.per100.kcal)} kcal/100 g{f.gramsPerUnit ? ` · ${f.gramsPerUnit} g/ud` : ''}</span>
+              <span className="muted">{t.kcalPer100(r0(f.per100.kcal))}{f.gramsPerUnit ? ` · ${t.perUnit(f.gramsPerUnit)}` : ''}</span>
             </button>
           </li>
         ))}
         <li>
           <button className="create" onClick={create}>
-            <Icon n="plus" size={18} /> {q.trim() ? <>Crear «{q.trim()}»</> : 'Crear alimento nuevo'}
+            <Icon n="plus" size={18} /> {q.trim() ? t.createX(q.trim()) : t.createNewFood}
           </button>
         </li>
       </ul>
