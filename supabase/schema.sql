@@ -11,3 +11,6 @@ create table objetos (
 alter table objetos enable row level security;
 create policy "solo lo mío" on objetos for all
   using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Desde el 30-oct-2026 las tablas nuevas no se exponen solas a la API: permiso explícito solo para usuarios con sesión.
+grant select, insert, update, delete on objetos to authenticated;
