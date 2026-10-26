@@ -73,3 +73,7 @@ Built following a spec → plan → build → test → review → ship workflow:
 
 - [Specification](docs/SPEC.md)
 - [Implementation plan](docs/PLAN.md)
+
+## License
+
+[MIT](LICENSE) © Hugo Gálvez Ureña

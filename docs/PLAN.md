@@ -39,3 +39,9 @@ A single `objects (kind, data jsonb)` table with RLS: every food, dish, day type
 ## Verification
 - `npm test` green (core logic).
 - Manual: 7-day menu with a free Friday meal, apply an adjustment, package warning, shopping list, same data on phone.
+
+## Future work
+- **Dishes** (reusable recipes) added to a cell in one go.
+- **Package-friendly amounts** as a tie-breaker in the adjuster ranking.
+- **Move the keep-alive to a Vercel Cron Job** (free on Hobby, daily). Scheduled GitHub Actions in *public* repos are disabled after 60 days without commits; a Vercel cron has no such rule.
+- **AI dish suggestions** from target macros (out of scope for v1).
