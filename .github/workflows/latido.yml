@@ -1,5 +1,5 @@
-# Llama a latido() en Supabase cada 5 días para que el plan gratis no pause el proyecto.
-name: Latido Supabase
+# Calls latido() in Supabase every 5 days so the free tier doesn't pause the project.
+name: Supabase keep-alive
 on:
   schedule:
     - cron: '0 8 */5 * *'
