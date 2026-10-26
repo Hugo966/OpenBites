@@ -4,6 +4,8 @@
 
 OpenBites is a personal meal-planning web app. You build a weekly (or two-week, or any length) menu from your own foods, and it computes calories, protein, carbs and fat for every meal and day, compares each day against its goal, and suggests exact tweaks to hit a macro target.
 
+**Live:** [open-bites.vercel.app](https://open-bites.vercel.app)
+
 > The UI is in **Spanish** on purpose: it's built for my family, who will use it day to day.
 
 ![Weekly menu grid](docs/screenshots/menu.png)

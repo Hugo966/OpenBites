@@ -30,7 +30,7 @@ A single `objects (kind, data jsonb)` table with RLS: every food, dish, day type
 7. ✅ **Adjuster UI**: dialog per cell, pick fixed macros, “what the day is missing” shortcut, exclude foods, apply an option.
 8. ✅ **core/packages** + warnings UI. Pending: package-friendly amounts as a tie-breaker in the adjuster.
 9. ✅ **Shopping list** dialog.
-10. **Deploy** to Vercel + manual test on phone.
+10. ✅ **Deploy** to Vercel (auto-deploys on push to `main`) + login tested on phone.
 
 ## Risks
 - Adjuster with many foods: pairs are O(n²) ≈ 20k 2×2 systems for 200 foods (~250 ms). If it grows, restrict pairs to meal items × candidates.
