@@ -1,9 +1,10 @@
-# Calls keep_alive() in Supabase daily so the free tier (paused after 7 idle days) never pauses the project;
-# scheduled runs can be delayed or skipped by GitHub, so daily leaves plenty of margin.
+# Keeps the Supabase free tier (paused after a week without enough activity) awake.
+# Runs 3 times a day because GitHub delays or skips scheduled runs; each run does a committed
+# write (keep_alive() upserts a timestamp) and a read, like real app traffic.
 name: Supabase keep-alive
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '17 2,10,18 * * *'
   workflow_dispatch:
 jobs:
   keep-alive:
@@ -11,6 +12,8 @@ jobs:
     steps:
       - run: |
           curl -fsS -X POST "$URL/rest/v1/rpc/keep_alive" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
+          echo
+          curl -fsS "$URL/rest/v1/objects?select=id&limit=1" -H "apikey: $KEY" -o /dev/null
         env:
           URL: ${{ secrets.SUPABASE_URL }}
           KEY: ${{ secrets.SUPABASE_KEY }}

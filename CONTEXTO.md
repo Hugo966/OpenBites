@@ -15,7 +15,7 @@ A personal weekly meal planner. You build a menu (any number of days × configur
 | Code | GitHub `Hugo966/OpenBites` (public, branch `main`) | MIT license |
 | Hosting | Vercel, Hobby (free), project `open-bites` on Hugo's account (same account as his other site) | Auto-deploys every push to `main` → https://open-bites.vercel.app |
 | Database + auth | Supabase, free plan, project "OpenBites" (org hugogalvezs) | Magic-link email login. Table `objects` with RLS; function `keep_alive()` |
-| Keep-alive | GitHub Action `.github/workflows/keep-alive.yml`, daily 08:00 UTC | Free tier pauses after 7 idle days |
+| Keep-alive | GitHub Action `.github/workflows/keep-alive.yml`, 3×/day (02:17, 10:17, 18:17 UTC) | Free tier pauses after a week without *enough* activity; each run upserts a timestamp + does a read |
 
 ### Where the credentials live (never write their values here)
 - Supabase URL + publishable key: local `.env.local` (git-ignored), Vercel env vars `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY`, GitHub repo secrets `SUPABASE_URL` / `SUPABASE_KEY`.

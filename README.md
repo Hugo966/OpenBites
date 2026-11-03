@@ -66,7 +66,7 @@ npm test
 
 1. Create a project and run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor.
 2. In **Authentication → URL Configuration**, set the Site URL to your app URL (e.g. `http://localhost:5173`).
-3. Optional: run [`supabase/keep-alive.sql`](supabase/keep-alive.sql) and add `SUPABASE_URL` / `SUPABASE_KEY` as repository secrets. A [scheduled GitHub Action](.github/workflows/keep-alive.yml) then pings the database daily so the free tier never pauses the project.
+3. Optional: run [`supabase/keep-alive.sql`](supabase/keep-alive.sql) and add `SUPABASE_URL` / `SUPABASE_KEY` as repository secrets. A [scheduled GitHub Action](.github/workflows/keep-alive.yml) then writes and reads the database three times a day so the free tier doesn't pause the project.
 
 ## Project docs
 
